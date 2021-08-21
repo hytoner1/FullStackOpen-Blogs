@@ -3,7 +3,8 @@ module.exports = {
     'node': true,
     'browser': true,
     'commonjs': true,
-    'es2021': true
+    'es2021': true,
+    'jest': true
   },
   'extends': 'eslint:recommended',
   'parserOptions': {
@@ -32,7 +33,7 @@ module.exports = {
       'error', 'never'
     ],
     'arrow-spacing': [
-      'error', { 'before': true, 'after': true }
+      'error', {'before': true, 'after': true}
     ],
     'no-console': 0
   }
