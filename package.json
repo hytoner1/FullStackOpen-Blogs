@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev":  "nodemon index.js",
-    "test": "echo \"Warning: no test specified\" && exit 0"
+    "test": "echo \"Warning: no test specified\" && exit 1"
   },
   "author": "Roni H",
   "license": "ISC",
