@@ -1,2 +1,6 @@
-# FullStackOpen-Blogs
-Univ. Helsinki MOOC Full Stack Development course part 4 tasks.
+# Full Stack Development Course
+### Roni Hytönen - _roni.hytonen(at)aalto.fi_
+
+## Part 4
+### Tasks 
+
