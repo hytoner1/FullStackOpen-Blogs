@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 app.use(express.static('build'));
 app.use(express.json());
+require('express-async-errors');
 
 const blogsRouter = require('./controllers/blogs');
 app.use('/api/blogs', blogsRouter);
