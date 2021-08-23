@@ -117,10 +117,10 @@ describe('Post new', () => {
   });
 
   test('blog without title', async () => {
-    const newBlog=new Blog({
+    const newBlog = {
       author: 'Roni',
       url: 'www.roni.test',
-    });
+    };
 
     await api.post('/api/blogs')
       .send(newBlog)
@@ -129,19 +129,46 @@ describe('Post new', () => {
   });
 
   test('blog without url', async () => {
-    const newBlog=new Blog({
+    const newBlog = {
       title: 'test',
       author: 'Roni'
-    });
+    };
 
     await api.post('/api/blogs')
       .send(newBlog)
       .expect(400)
       .expect('Content-Type', /application\/json/);
   });
-
 });
 
+describe('Expansions', () => {
+  test('delete blog', async () => {
+    await api
+      .delete('/api/blogs/' + initialBlogs[0]._id)
+      .expect(204);
+
+    const response = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    expect(response.body).toHaveLength(nInitialNotes - 1);
+  });
+
+  test('update blog', async () => {
+    const newLikes = 100;
+    const newBlog = {
+      likes: newLikes
+    };
+
+    const response = await api
+      .put('/api/blogs/' + initialBlogs[0]._id)
+      .send(newBlog)
+      .expect(200);
+
+    expect(response.body.likes).toEqual(newLikes);
+  });
+});
 
 afterAll(() => {
   mongoose.connection.close();
