@@ -5,7 +5,9 @@ app.use(express.json());
 require('express-async-errors');
 
 const blogsRouter = require('./controllers/blogs');
+const usersRouter = require('./controllers/users');
 app.use('/api/blogs', blogsRouter);
+app.use('/api/users', usersRouter);
 
 const config = require('./utils/config');
 const logger = require('./utils/logger');
