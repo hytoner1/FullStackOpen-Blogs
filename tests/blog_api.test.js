@@ -3,10 +3,13 @@ const app = require('../app');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const api = supertest(app);
-
+const bcrypt = require('bcrypt');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
-const nInitialNotes = 4;
+const helper = require('./test_helper.js');
+
+const nInitialBlogs = 4;
 const initialBlogs = [
   {
     _id: '5a422a851b54a676234d17f7',
@@ -58,11 +61,30 @@ const initialBlogs = [
   }
 ];
 
+let loggedInUser = {};
+
 beforeEach(async () => {
+  // Create one user and get their token
+  await User.deleteMany({});
+  const passwordHash = await bcrypt.hash('root', 10);
+  const userObj = new User({
+    username: 'root', name: 'root', passwordHash,
+    _id: '6126323c3eb3228da4f37b88'
+  });
+  await userObj.save();
+
+  const loginResponse = await api
+    .post('/api/login')
+    .send({username: 'root', password: 'root'});
+
+  loggedInUser = loginResponse.body;
+
+  // Initialize blogs with the one user
   await Blog.deleteMany({});
 
-  for(let i = 0; i < nInitialNotes; i++){
+  for(let i = 0; i < nInitialBlogs; i++){
     let blogObj = new Blog(initialBlogs[i]);
+    blogObj.user = userObj._id;
     await blogObj.save();
   }
 });
@@ -73,7 +95,7 @@ test('correct number of blogs is returned', async () => {
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  expect(response.body).toHaveLength(nInitialNotes);
+  expect(response.body).toHaveLength(nInitialBlogs);
 });
 
 test('the unique identifier is called id', async () => {
@@ -90,16 +112,12 @@ describe('Post new', () => {
     const newBlog = initialBlogs[initialBlogs.length - 1];
 
     await api.post('/api/blogs')
+      .set('Authorization', 'bearer ' + loggedInUser.token)
       .send(newBlog)
       .expect(200)
       .expect('Content-Type', /application\/json/);
 
-    const response = await api
-      .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
-
-    expect(response.body).toHaveLength(nInitialNotes + 1);
+    expect(await helper.blogsInDb()).toHaveLength(nInitialBlogs + 1);
   });
 
   test('blog without likes', async () => {
@@ -111,8 +129,10 @@ describe('Post new', () => {
 
     const response = await api.post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', 'bearer ' + loggedInUser.token)
       .expect(200)
       .expect('Content-Type', /application\/json/);
+
     expect(response.body.likes).toEqual(0);
   });
 
@@ -145,14 +165,10 @@ describe('Expansions', () => {
   test('delete blog', async () => {
     await api
       .delete('/api/blogs/' + initialBlogs[0]._id)
+      .set('Authorization', 'bearer ' + loggedInUser.token)
       .expect(204);
 
-    const response = await api
-      .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
-
-    expect(response.body).toHaveLength(nInitialNotes - 1);
+    expect(await helper.blogsInDb()).toHaveLength(nInitialBlogs - 1);
   });
 
   test('update blog', async () => {
@@ -163,10 +179,19 @@ describe('Expansions', () => {
 
     const response = await api
       .put('/api/blogs/' + initialBlogs[0]._id)
+      .set('Authorization', 'bearer ' + loggedInUser.token)
       .send(newBlog)
       .expect(200);
 
     expect(response.body.likes).toEqual(newLikes);
+  });
+
+  test('delete without login token', async () => {
+    await api
+      .delete('/api/blogs/' + initialBlogs[0]._id)
+      .expect(401);
+
+    expect(await helper.blogsInDb()).toHaveLength(nInitialBlogs);
   });
 });
 
