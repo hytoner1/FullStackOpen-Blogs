@@ -107,7 +107,7 @@ test('the unique identifier is called id', async () => {
   expect(response.body._id).toBe(undefined);
 });
 
-describe.only('Post new', () => {
+describe('Post new', () => {
   test('blog', async () => {
     const newBlog = initialBlogs[initialBlogs.length - 1];
 

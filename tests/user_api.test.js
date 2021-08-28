@@ -63,7 +63,7 @@ describe('when there is initially one user in db', () => {
   });
 });
 
-describe.only('Creation fails when', () => {
+describe('Creation fails when', () => {
   test('the username is less than three characters', async () => {
     const usersAtStart = await helper.usersInDb();
 
