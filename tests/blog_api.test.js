@@ -107,7 +107,7 @@ test('the unique identifier is called id', async () => {
   expect(response.body._id).toBe(undefined);
 });
 
-describe('Post new', () => {
+describe.only('Post new', () => {
   test('blog', async () => {
     const newBlog = initialBlogs[initialBlogs.length - 1];
 
@@ -143,6 +143,7 @@ describe('Post new', () => {
     };
 
     await api.post('/api/blogs')
+      .set('Authorization', 'bearer ' + loggedInUser.token)
       .send(newBlog)
       .expect(400)
       .expect('Content-Type', /application\/json/);
@@ -155,8 +156,18 @@ describe('Post new', () => {
     };
 
     await api.post('/api/blogs')
+      .set('Authorization', 'bearer ' + loggedInUser.token)
       .send(newBlog)
       .expect(400)
+      .expect('Content-Type', /application\/json/);
+  });
+
+  test('blog without authorization', async () => {
+    const newBlog = initialBlogs[initialBlogs.length - 1];
+
+    await api.post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
       .expect('Content-Type', /application\/json/);
   });
 });
